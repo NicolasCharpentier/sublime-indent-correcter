@@ -50,8 +50,7 @@ if (file_exists($finalDirectory)) {
     // - Ur final directory already exists, use another
 } 
 
-if (! file_exists($finalDirectory))
-    mkdir($finalDirectory, 0777, true);
+mkdir($finalDirectory, 0777, true);
 
 echo "Sublime to emacs -->  " . realpath($baseDirectory) . " TO " . realpath($finalDirectory) . PHP_EOL;
 
