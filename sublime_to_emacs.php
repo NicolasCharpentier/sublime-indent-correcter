@@ -56,7 +56,7 @@ echo "Sublime to emacs -->  " . realpath($baseDirectory) . " TO " . realpath($fi
 
 main($baseDirectory, $finalDirectory, $selectionMask, $preciseCopy, $preciseCopyMask, $overwrite);
 
-echo "Succes";
+echo "Succes" . PHP_EOL;
 
 /**
  * @param string $baseDirectory
