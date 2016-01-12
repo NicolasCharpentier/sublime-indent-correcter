@@ -1,19 +1,7 @@
 <?php
 
-$argv1 = $argc >= 2 ? $argv[1] : null;
-$argv2 = $argc >= 3 ? $argv[2] : null;
 
-
-// ---------------------------- SETTINGS -------------------------
-
-$JAI_CONFIGURE_LES_PARAMETRES = false;
-// - At true when configuration done
-                
-// Dossiers source et final, chemin relatif ou absolut. Sur-écrit par argv[1] et [2]
-$baseDirectory  = $argv1 ?: '/Users/Nico/softwar' . '/';  
-$finalDirectory = $argv2 ?: '/Users/Nico/softwar/CLEANED3' . '/';
-// - Source and Final directories, absolute or relativ path. Overwritten by argv[1] and [2]
-
+// ---------------------------- BEG. SETTINGS -------------------------
 
 // Masque des fichiers à ré-indenter
 $selectionMask  = ['.c', '.h'];
@@ -21,42 +9,75 @@ $selectionMask  = ['.c', '.h'];
 
 
 // Option pour ne copier dans le dossier final que les fichiers répondant aux masques plus bas
-// Si false, on recopiera donc les même fichiers que dans le repertoire source
 // Utile pour clean les merdes qu'on a souvent genre les .o, ~ etc. 
+// Si false, on recopiera donc les même fichiers que dans le repertoire source
 $preciseCopy = true; 
 // - If you only want to copy certain files, put this at true then fill the below array
 
-$preciseCopyMask = ['Makefile', '.c', '.h']; // Osef si $preciseCopy == false
-// AU FAIT les .svn .git et autres .DS_STORE ne sont pas copié de base.
-// - BTW .svn .git .DS_STORE and other bs aren't copied by default
+$preciseCopyMask = ['Makefile', '.c', '.h'];
+
+// - BTW: .svn .git .DS_STORE and other bs aren't copied by default
 
 
 // ---------------------------- END SETTINGS ---------------------------- 
-// - If u encounter an error message, read the according comment to translate
 
 
-if (! $JAI_CONFIGURE_LES_PARAMETRES) {
-    die("Merci de configurer les params au tout début du script" . PHP_EOL);
-    // - Put $JAI_CONFIGURE_LES_PARAMETRES at true
-}
+// nothing to configure from there
+$usage = 'Usage: php sublime_to_emacs.php /path/to/my/project /path/to/my/cleaned_project' . PHP_EOL;
+
+if ($argc != 3)
+    die($usage);
+
+$baseDirectory  = substr($argv[1], -1) !== '/' ? $argv[1] . '/' : $argv[1];
+$finalDirectory = substr($argv[2], -1) !== '/' ? $argv[2] . '/' : $argv[2];
+
 
 if ($baseDirectory === $finalDirectory) {
-    die("L'overwriting n'est pas autorisé" . PHP_EOL);
-    // - Overwriting not allowed, for ur safety. Change the finalDirectory location
+    die("L'overwriting n'est pas autorisé et vraiment pas recommandé" . PHP_EOL);
 }
 
+$confirm = function ($message) {
+    $handle = fopen ("php://stdin","r");
+    while ($resp !== 'y' and 'n' !== $resp) {
+        echo $message . ' (y/n)' . PHP_EOL;
+        $line = fgets($handle);
+        $resp = substr($line, 0, strlen($line) - 1);
+    }
+    fclose($handle);
+    return $resp === 'y';
+};
+
 if (file_exists($finalDirectory)) {
-    die("Merci de choisir un dossier final non existant" . PHP_EOL);
-    // - Ur final directory already exists, use another
-} 
+    $resp = $confirm(realpath($finalDirectory) . ' already exists. Remove ?');
+
+    if (! $resp) {
+        die('Pff, uninstall noob' . PHP_EOL);
+    }
+    recursiveRemoveDirectory($finalDirectory);
+}
+
+
 
 mkdir($finalDirectory, 0777, true);
 
-echo "Sublime to emacs -->  " . realpath($baseDirectory) . " TO " . realpath($finalDirectory) . PHP_EOL;
+echo PHP_EOL . 'Sublime to emacs -->  ' . realpath($baseDirectory) . ' TO ' . realpath($finalDirectory) . PHP_EOL;
+echo PHP_EOL . 'Reindenting files corresponding to these masks' . PHP_EOL;
+var_dump($selectionMask);
+echo PHP_EOL;
+if ($preciseCopy) {
+    echo 'Copying files corresponding to these masks' . PHP_EOL;
+    var_dump($preciseCopyMask); 
+} else {
+    echo 'Copying every file from source' . PHP_EOL;
+}
 
-main($baseDirectory, $finalDirectory, $selectionMask, $preciseCopy, $preciseCopyMask, $overwrite);
+echo PHP_EOL;
+if (! $confirm('Shall we?')) die ('tchiiiiiiiiiiiiiiip' . PHP_EOL);
 
-echo "Succes" . PHP_EOL;
+
+main($baseDirectory, $finalDirectory, $selectionMask, $preciseCopy, $preciseCopyMask);
+
+echo "Success" . PHP_EOL;
 
 /**
  * @param string $baseDirectory
@@ -64,10 +85,9 @@ echo "Succes" . PHP_EOL;
  * @param array $selectionMask
  * @param bool $preciseCopy
  * @param array $preciseCopyMask
- * @param bool $overwrite
  * @throws Exception
  */
-function main($baseDirectory, $finalDirectory, $selectionMask, $preciseCopy = false, $preciseCopyMask = [], $overwrite = false)
+function main($baseDirectory, $finalDirectory, $selectionMask, $preciseCopy = false, $preciseCopyMask = [])
 {
     foreach (buildEmacsFilesArray($baseDirectory, $preciseCopy, $preciseCopyMask) as $file) {
         //$path = $finalDirectory . substr($file, 3);
@@ -240,6 +260,22 @@ function getLen($pos, $char)
         return (1);
 
     return [4,3,2,1][$pos];
+}
+
+
+
+//http://stackoverflow.com/questions/11267086/php-unlink-all-files-within-a-directory-and-then-deleting-that-directory
+function recursiveRemoveDirectory($directory)
+{
+    foreach(glob("{$directory}/*") as $file)
+    {
+        if(is_dir($file)) { 
+            recursiveRemoveDirectory($file);
+        } else {
+            unlink($file);
+        }
+    }
+    rmdir($directory);
 }
 
 ?>
