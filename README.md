@@ -1,7 +1,7 @@
 # sublime-indent-correcter
 If your `cat` from Sublime2 projects looks horrible, this may be for you.
 
-## *Frenchies: Cas d'utilisation principal*
+## *Francais: Cas d'utilisation principal*
 *En école d'ingé on vous demande de suivre une norme comprenant des règles d'indentations. Et cette norme ne sera pas vérifié sous votre editeur mais bien sur le terminal. Bah si vous avez codé sous sublime, le résultat sera déguelasse*
 
 ## What is this
@@ -25,6 +25,8 @@ When coding on sublime-text2, or other text-editors / IDE, you often get an inde
   This does not magically guess the correct indentation, but converts it the way you see it in Sublime.
   
   This **ONLY** have been tested from files created with the sublime-text-2 default config (indent width: 4).
+  
+  *My project has mixed files, some from sublime, some from emacs* You should write the filenames from Subl in the `$selectionMask` (instead of the usual wildcards like .c)
   
 ## TODOS etc.
   Probably nothing will change. 
