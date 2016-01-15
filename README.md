@@ -15,9 +15,9 @@ When coding on sublime-text2, or other text-editors / IDE, you often get an inde
 
   1.  Read [Warnings](#warnings) chapter.
 
-  2.  `git clone https://github.com/NicolasCharpentier/sublime-indent-correcter`
+  2.  Clone it: `git clone https://github.com/NicolasCharpentier/sublime-indent-correcter`
   
-  2.  Open up `sublime_to_emacs.php` and configure it by reading the comments.
+  2.  **Open** up `sublime_to_emacs.php` and **configure it** by reading the comments.
   
   3.  Launch it. `php sublime_to_emacs.php /path/to/my/current_project /path/to/my/cleaned_project`
 
