@@ -13,7 +13,7 @@ When coding on sublime-text2, or other text-editors / IDE, you often get an inde
 
 ## How to use
 
-  1.  Read [Warnings](https://github.com/NicolasCharpentier/sublime-indent-correcter#warnings) chapter.
+  1.  Read [Warnings](#warnings) chapter.
 
   2.  `git clone https://github.com/NicolasCharpentier/sublime-indent-correcter`
   
