@@ -1,29 +1,40 @@
 <?php
 
+// Usage: sublime_to_emacs.php /path/to/my/src_project /path/to/my/cleaned_project
 
-// ---------------------------- BEG. SETTINGS -------------------------
-
-// Masque des fichiers à ré-indenter
-$selectionMask  = ['.c', '.h'];
-// - Only files corresponding to this mask will be re-indented
+// This script will copy files from src_project/ to cleaned_project/, and re-indenting the ones you need
 
 
-// Option pour ne copier dans le dossier final que les fichiers répondant aux masques plus bas
-// Utile pour clean les merdes qu'on a souvent genre les .o, ~ etc. 
-// Si false, on recopiera donc les même fichiers que dans le repertoire source
-$preciseCopy = true; 
-// - If you only want to copy certain files, put this at true then fill the below array
+// ---------------------------- BEG. SETTINGS ----------------------------------------------
+// You need to set the files you want to re-indent, and the ones you want to copy, to your cleaned directory
 
-$preciseCopyMask = ['Makefile', '.c', '.h'];
+// Files containing these strings in their names will be re-indented
+$toIndent = ['.c', '.h'];
+// Examples:
+// $toIndent = ['.cpp', '.h'];
+// $toIndent = ['main.c', 'george.c']; // "I only want to reindent precise files!"
 
-// - BTW: .svn .git .DS_STORE and other bs aren't copied by default
+
+// If null,  the script will copy EVERY file from source to destination
+// If [...], the script will only copy files containing the array strings in their names
+$copyOnlyTheseFiles = null;
+// Examples:
+// $copyOnlyTheseFiles = ['Makefile', '.c', '.h'];
+// $copyOnlyTheseFiles = ['.cpp', '.h'];
+// $copyOnlyTheseFiles = ['.php'];
+// If you dont get this option, just let it at null
 
 
-// ---------------------------- END SETTINGS ---------------------------- 
+// Ps : .svn .git .DS_STORE are NOT copied by default (line 174)
+
+// ---------------------------- END SETTINGS -------------------------------------------------
 
 
 // nothing to configure from there
 $usage = 'Usage: php sublime_to_emacs.php /path/to/my/project /path/to/my/cleaned_project' . PHP_EOL;
+$selectionMask = $toIndent;
+$preciseCopy = (is_array($copyOnlyTheseFiles) and count($copyOnlyTheseFiles));
+$preciseCopyMask = $preciseCopy ? $copyOnlyTheseFiles : null;
 
 if ($argc != 3)
     die($usage);
@@ -39,7 +50,7 @@ if ($baseDirectory === $finalDirectory) {
 $confirm = function ($message) {
     $handle = fopen ("php://stdin","r");
     while ($resp !== 'y' and 'n' !== $resp) {
-        echo $message . ' (y/n)' . PHP_EOL;
+        echo $message . ' (y/n)' . PHP_EOL . '> ';
         $line = fgets($handle);
         $resp = substr($line, 0, strlen($line) - 1);
     }
@@ -47,32 +58,34 @@ $confirm = function ($message) {
     return $resp === 'y';
 };
 
+$removeFinalDir = false;
 if (file_exists($finalDirectory)) {
     $resp = $confirm(realpath($finalDirectory) . ' already exists. Remove ?');
-
     if (! $resp) {
-        die('Pff, uninstall noob' . PHP_EOL);
+        die('Pussy' . PHP_EOL);
     }
-    recursiveRemoveDirectory($finalDirectory);
+    $removeFinalDir = true;
 }
 
 
-
-mkdir($finalDirectory, 0777, true);
-
-echo PHP_EOL . 'Sublime to emacs -->  ' . realpath($baseDirectory) . ' TO ' . realpath($finalDirectory) . PHP_EOL;
-echo PHP_EOL . 'Reindenting files corresponding to these masks' . PHP_EOL;
-var_dump($selectionMask);
-echo PHP_EOL;
+echo '---------------------------------------------------------------------------';
+echo PHP_EOL . 'Sublime to emacs --->  ' . realpath($baseDirectory) . ' copied TO ' . realpath($finalDirectory) . PHP_EOL;
+echo PHP_EOL . 'Files copied -------> ';
 if ($preciseCopy) {
-    echo 'Copying files corresponding to these masks' . PHP_EOL;
-    var_dump($preciseCopyMask); 
-} else {
-    echo 'Copying every file from source' . PHP_EOL;
-}
+    foreach ($preciseCopyMask as $idx => $mask) {
+        if ($idx) echo ', ';
+        echo $mask;
+    } echo PHP_EOL;
+} else echo 'Every file' . PHP_EOL;
+echo PHP_EOL . 'Files re-indented --> ';
+foreach ($selectionMask as $idx => $mask) {
+    if ($idx) echo ', ';
+    echo $mask;
+} echo PHP_EOL . PHP_EOL;
 
-echo PHP_EOL;
-if (! $confirm('Shall we?')) die ('tchiiiiiiiiiiiiiiip' . PHP_EOL);
+if (! $confirm('GO?')) die ('tchiiiiiiiiiiiiiiip' . PHP_EOL);
+if ($removeFinalDir) recursiveRemoveDirectory($finalDirectory);
+mkdir($finalDirectory, 0777, true);
 
 
 main($baseDirectory, $finalDirectory, $selectionMask, $preciseCopy, $preciseCopyMask);
@@ -87,7 +100,7 @@ echo "Success" . PHP_EOL;
  * @param array $preciseCopyMask
  * @throws Exception
  */
-function main($baseDirectory, $finalDirectory, $selectionMask, $preciseCopy = false, $preciseCopyMask = [])
+function main($baseDirectory, $finalDirectory, $selectionMask, $preciseCopy, $preciseCopyMask)
 {
     foreach (buildEmacsFilesArray($baseDirectory, $preciseCopy, $preciseCopyMask) as $file) {
         //$path = $finalDirectory . substr($file, 3);
