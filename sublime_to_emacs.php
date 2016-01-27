@@ -69,7 +69,7 @@ if (file_exists($finalDirectory)) {
 
 
 echo '---------------------------------------------------------------------------';
-echo PHP_EOL . 'Sublime to emacs --->  ' . realpath($baseDirectory) . ' copied TO ' . realpath($finalDirectory) . PHP_EOL;
+echo PHP_EOL . 'Sublime to emacs --->  ' . realpath($baseDirectory) . ' copied TO ' . $finalDirectory . PHP_EOL;
 echo PHP_EOL . 'Files copied -------> ';
 if ($preciseCopy) {
     foreach ($preciseCopyMask as $idx => $mask) {
@@ -266,13 +266,15 @@ function getRepresentation($pos, $charData) // -- TODO Prendre en compte les col
  */
 function getLen($pos, $char)
 {
+    $poss = [4,3,2,1];
+
     if ($pos > 3)
         while (($pos -= 4) > 3) ;
 
     if ($char != chr(9))
         return (1);
 
-    return [4,3,2,1][$pos];
+    return $poss[$pos];
 }
 
 
